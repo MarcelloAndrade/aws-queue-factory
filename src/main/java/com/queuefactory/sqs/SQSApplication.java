@@ -1,4 +1,4 @@
-package com.queuefactory.sql;
+package com.queuefactory.sqs;
 
 import java.util.ArrayList;
 import java.util.HashMap;

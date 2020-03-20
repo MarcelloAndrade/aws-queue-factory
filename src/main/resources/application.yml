@@ -1,1 +1,22 @@
+spring:
+  profiles:
+    active: ${AMBIENTE:dev}
+
+---
+spring:  
+  profiles: dev   
+  
+aws:
+  sqs:
+    accessKey: accessKey
+    secretKey: secretKey
+      
+---      
+spring:  
+  profiles: test   
+  
+aws:
+  sqs:
+    accessKey: accessKey
+    secretKey: secretKey
 

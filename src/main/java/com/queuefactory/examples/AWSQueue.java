@@ -1,4 +1,4 @@
-package com.queuefactory.sqs;
+package com.queuefactory.examples;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
-public class SQSApplication {
+public class AWSQueue {
 
 	private static final String STANDARD_QUEUE_NAME = "queue-factory";
 	private static final String FIFO_QUEUE_NAME = "queue-factory.fifo";

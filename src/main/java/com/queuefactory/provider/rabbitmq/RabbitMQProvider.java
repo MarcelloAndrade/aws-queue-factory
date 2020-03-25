@@ -1,5 +1,10 @@
 package com.queuefactory.provider.rabbitmq;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Map;
+
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -14,10 +19,10 @@ public class RabbitMQProvider {
 	private Connection connection;
 	private Channel channel;
 	
-	public RabbitMQProvider() {
+	public RabbitMQProvider(String host) {
 		try {
 			factory = new ConnectionFactory();
-			factory.setHost("localhost");
+			factory.setHost(host);
 			connection = factory.newConnection();
 			channel = connection.createChannel();
 		} catch (Exception e) {
@@ -25,13 +30,22 @@ public class RabbitMQProvider {
 		}
 	}
 	
-	public static RabbitMQProvider builder() {
-		return new RabbitMQProvider();
+	public static RabbitMQProvider builder(String host) {
+		return new RabbitMQProvider(host);
 	}
 
-	public void sendMessageQueueChannel(String queueName, byte[] message) {
+	/**
+	 * Envio de menssagem diretamente para uma Queue
+	 * @param queueName - nome da fila
+	 * @param durable - true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
+	 * @param exclusive -  true se estamos declarando uma fila exclusiva (restrita a esta conexão)
+	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
+	 * @param arguments - outras propriedades (argumentos de construção) para a fila
+	 * @param message - menssagem a ser enviada
+	 */
+	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, byte[] message) {
 		try {
-			channel.queueDeclare(queueName, false, false, false, null);
+			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
 			channel.basicPublish("", queueName, null, message);
 			log.info("RabbitMQ SUCESS send message to Queue: {}", queueName);
 		} catch (Exception e) {
@@ -41,43 +55,76 @@ public class RabbitMQProvider {
 		}
 	}
 	
-	public void sendMessageTopicExchange(String exchangeName, String routingKey, byte[] message) {
+	/**
+	 * Envio de menssagem para exchange
+	 * @param exchangeName - nome da exchange
+	 * @param exchangeType - type exchange
+	 * @param exchangeDurable - true se estamos declarando uma troca durável (a troca sobreviverá à reinicialização do servidor)
+	 * @param routingKey - routing key
+	 * @param message - menssagem a ser enviada
+	 */
+	public void sendMessageExchange(String exchangeName, BuiltinExchangeType exchangeType, Boolean exchangeDurable, String routingKey, byte[] message) {
 		try {
-			channel.exchangeDeclare(exchangeName, BuiltinExchangeType.TOPIC);
+			routingKey = routingKey == null ? "" : routingKey;
+			channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
 			channel.basicPublish(exchangeName, routingKey, null, message);
-			log.info("RabbitMQ SUCESS send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey);
+			log.info("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey);
 		} catch (Exception e) {
-			log.error("RabbitMQ ERROR send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey, e);
+			log.error("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);
 		} finally {
 			close();
 		}
 	}
 	
-	public void sendMessageFanoutExchange(String exchangeName, String routingKey, byte[] message) {
+	/**
+	 * Envio de menssagem para exchange
+	 * @param exchangeName - nome da exchange
+	 * @param exchangeType - type exchange
+	 * @param exchangeDurable - true se estamos declarando uma troca durável (a troca sobreviverá à reinicialização do servidor)
+	 * @param routingKey - routing key
+	 * @param message - object menssagem a ser enviada
+	 */
+	public void sendMessageExchange(String exchangeName, BuiltinExchangeType exchangeType, Boolean exchangeDurable, String routingKey, Object message) {
 		try {
-			channel.exchangeDeclare(exchangeName, BuiltinExchangeType.FANOUT);
-			channel.basicPublish(exchangeName, routingKey, null, message);
-			log.info("RabbitMQ SUCESS send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey);
+			routingKey = routingKey == null ? "" : routingKey;
+			channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
+			channel.basicPublish(exchangeName, routingKey, null, getByteArray(message));
+			log.info("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey);
 		} catch (Exception e) {
-			log.error("RabbitMQ ERROR send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey, e);
+			log.error("RabbitMQ ERROR send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);
 		} finally {
 			close();
 		}
 	}
-	
-	public void sendMessageDirectExchange(String exchangeName, String routingKey, byte[] message) {
+
+	/**
+	 * Abre um canal para ouvir novas menssagens que chegam na fila
+	 * @param queueName - queue name
+	 * @param durable -  true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
+	 * @param exclusive - true se estamos declarando uma fila exclusiva (restrita a esta conexão)
+	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
+	 * @param arguments -  outras propriedades (argumentos de construção) para a fila
+	 * @return canal para ouvir novas menssagens
+	 */
+	public Channel listeningQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments) {
 		try {
-			channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT);
-			channel.basicPublish(exchangeName, routingKey, null, message);
-			log.info("RabbitMQ SUCESS send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey);
+			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
+			log.info("RabbitMQ SUCESS listening Queue: {}", queueName);
+			return channel;
 		} catch (Exception e) {
-			log.error("RabbitMQ ERROR send message to Exchange: {} and Routing Key: {} ", exchangeName, routingKey, e);
-		} finally {
-			close();
-		}
+			log.error("RabbitMQ ERROR listening Queue: {}", queueName , e);
+			return null;
+		} 
+    }
+	
+	private byte[] getByteArray(Object obj) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ObjectOutputStream os = new ObjectOutputStream(out);
+		os.writeObject(obj);
+		return out.toByteArray();
 	}
 	
-	private void close() {
+	public void close() {
 		try {
 			channel.close();
 			connection.close();

@@ -30,7 +30,7 @@ public class RabbitMQProvider {
 		}
 	}
 	
-	public static RabbitMQProvider builder(String host) {
+	public static RabbitMQProvider connect(String host) {
 		return new RabbitMQProvider(host);
 	}
 
@@ -47,6 +47,27 @@ public class RabbitMQProvider {
 		try {
 			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
 			channel.basicPublish("", queueName, null, message);
+			log.info("RabbitMQ SUCESS send message to Queue: {}", queueName);
+		} catch (Exception e) {
+			log.error("RabbitMQ ERROR send message to Queue: {}", queueName , e);
+		} finally {
+			close();
+		}
+	}
+	
+	/**
+	 * Envio de menssagem diretamente para uma Queue
+	 * @param queueName - nome da fila
+	 * @param durable - true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
+	 * @param exclusive -  true se estamos declarando uma fila exclusiva (restrita a esta conexão)
+	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
+	 * @param arguments - outras propriedades (argumentos de construção) para a fila
+	 * @param message - menssagem a ser enviada
+	 */
+	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, Object message) {
+		try {
+			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
+			channel.basicPublish("", queueName, null, getByteArray(message));
 			log.info("RabbitMQ SUCESS send message to Queue: {}", queueName);
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR send message to Queue: {}", queueName , e);

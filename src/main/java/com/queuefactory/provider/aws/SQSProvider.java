@@ -22,25 +22,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SQSProvider {
 	
-//	@Value("${aws.sqs.accessKey}")
-//	private String accessKey;
-//	
-//	@Value("${aws.sqs.secretKey}")
-//	private String secretKey;
-	
 	private final AWSCredentials credentials;
 	private final AmazonSQS sqsClient;
 	
-	public SQSProvider() {
-		credentials = new BasicAWSCredentials("xxxxxx", "yyyyyy");
+	public SQSProvider(String accessKey, String secretKey) {
+		credentials = new BasicAWSCredentials(accessKey, secretKey);
 		sqsClient = AmazonSQSClientBuilder
 					.standard()
 					.withCredentials(new AWSStaticCredentialsProvider(credentials))
 					.withRegion(Regions.SA_EAST_1).build();
 	}
 	
-	public static SQSProvider builder() {
-        return new SQSProvider();
+	public static SQSProvider connect(String accessKey, String secretKey) {
+        return new SQSProvider(accessKey, secretKey);
     }
 	
 	public void createQueue(SQSTypeQueue type, String queueName) {

@@ -80,7 +80,7 @@ public class RabbitMQProvider {
 	 * Envio de menssagem para exchange
 	 * @param exchangeName - nome da exchange
 	 * @param exchangeType - type exchange
-	 * @param exchangeDurable - true se estamos declarando uma troca durável (a troca sobreviverá à reinicialização do servidor)
+	 * @param exchangeDurable - true se estamos declarando uma exchange durável (a exchange sobreviverá à reinicialização do servidor)
 	 * @param routingKey - routing key
 	 * @param message - menssagem a ser enviada
 	 */
@@ -101,7 +101,7 @@ public class RabbitMQProvider {
 	 * Envio de menssagem para exchange
 	 * @param exchangeName - nome da exchange
 	 * @param exchangeType - type exchange
-	 * @param exchangeDurable - true se estamos declarando uma troca durável (a troca sobreviverá à reinicialização do servidor)
+	 * @param exchangeDurable - true se estamos declarando uma exchange durável (a exchange sobreviverá à reinicialização do servidor)
 	 * @param routingKey - routing key
 	 * @param message - object menssagem a ser enviada
 	 */

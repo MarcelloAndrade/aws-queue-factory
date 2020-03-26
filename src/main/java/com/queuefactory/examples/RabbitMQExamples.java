@@ -24,6 +24,7 @@ public class RabbitMQExamples {
 	
 	public static void main(String[] args) {
 //		exampleSendMessageQueue();
+//		exampleSendMessageQueueObject();
 //		exampleSendMessageDirectExchange();
 //		exampleSendMessageFanoutExchangeObject();
 //		exampleReadMessageQueue();
@@ -34,6 +35,13 @@ public class RabbitMQExamples {
 	public static void exampleSendMessageQueue() {
 		byte[] message = "message test".getBytes();
 		RabbitMQProvider.connect(HOST).sendMessageQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, message);
+	}
+	
+	public static void exampleSendMessageQueueObject() {
+		User user = new User();
+		user.setName("Maria");
+		user.setAge(31);
+		RabbitMQProvider.connect(HOST).sendMessageQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, user);
 	}
 	
 	public static void exampleSendMessageDirectExchange() {

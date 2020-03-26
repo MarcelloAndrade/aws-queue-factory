@@ -25,7 +25,7 @@ import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
-public class AwsSqs {
+class AwsSqs {
 
 	private static final String STANDARD_QUEUE_NAME = "queue-factory";
 	private static final String FIFO_QUEUE_NAME = "queue-factory.fifo";

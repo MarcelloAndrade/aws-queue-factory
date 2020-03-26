@@ -3,7 +3,7 @@ package com.queuefactory.examples;
 import com.queuefactory.provider.aws.SQSProvider;
 import com.queuefactory.provider.aws.SQSTypeQueue;
 
-public class AwsSqsExamples {
+class AwsSqsExamples {
 	
 	private static final String ACCESS_KEY = "xxxxxxx";
 	private static final String SECRET_KEY = "yyyyyyy";	

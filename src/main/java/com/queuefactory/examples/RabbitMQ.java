@@ -13,7 +13,7 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 
-public class RabbitMQ {
+class RabbitMQ {
 
 	private static final String QUEUE_NAME = "queue-test";
 	

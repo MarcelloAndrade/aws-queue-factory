@@ -1,7 +1,9 @@
 package com.queuefactory.provider.rabbitmq;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
@@ -145,12 +147,18 @@ public class RabbitMQProvider {
 		return out.toByteArray();
 	}
 	
-	public void close() {
+	void close() {
 		try {
 			channel.close();
 			connection.close();
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR close connection", e);
 		}
+	}
+	
+	public static Object deserialize(byte[] message) throws IOException, ClassNotFoundException {
+		ByteArrayInputStream in = new ByteArrayInputStream(message);
+		ObjectInputStream is = new ObjectInputStream(in);
+		return is.readObject();
 	}
 }

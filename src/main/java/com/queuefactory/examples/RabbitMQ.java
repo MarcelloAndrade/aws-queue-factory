@@ -16,15 +16,25 @@ import com.rabbitmq.client.Envelope;
 public class RabbitMQ {
 
 	private static final String QUEUE_NAME = "queue-test";
+	
 	private static final String FANOUT_EXCHANGE_NAME = "fanout-exchange-test";
 	private static final String FANOUT_QUEUE_NAME_1 = "fanout-queue-1";
 	private static final String FANOUT_QUEUE_NAME_2 = "fanout-queue-2";
+	
+	private static final String DIRECT_EXCHANGE_NAME = "direct-exchange-test";
+	private static final String DIRECT_QUEUE_NAME_1 = "direct-queue-1";
+	private static final String DIRECT_QUEUE_NAME_2 = "direct-queue-2";
+	
+	private static final String ROUTING_KEY_1 = "routingKey-1";
+	private static final String ROUTING_KEY_2 = "routingKey-2";
 
 	public static void main(String[] args) throws IOException, TimeoutException {
-//		sendMessageQueue();
-//		readMessageQueue();
-//		sendMessageFanoutExchange();
-		createExchangeAndBindingQueue();
+		sendMessageQueue();
+		readMessageQueue();
+		
+		createExchangeDirectAndBindingQueue();
+		
+		createExchangeFanoutAndBindingQueue();
 	}
 
 	public static void sendMessageQueue() throws IOException, TimeoutException {
@@ -33,7 +43,7 @@ public class RabbitMQ {
 		Connection connection = factory.newConnection();
 		
 		Channel channel = connection.createChannel();
-		channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+		channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
 		String message = "product details";
 		channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
@@ -49,7 +59,7 @@ public class RabbitMQ {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
@@ -63,23 +73,7 @@ public class RabbitMQ {
         channel.basicConsume(QUEUE_NAME, true, consumer);
     }
 	
-	public static void sendMessageFanoutExchange() throws IOException, TimeoutException {
-		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost("localhost");
-		Connection connection = factory.newConnection();
-		
-		Channel channel = connection.createChannel();
-		channel.exchangeDeclare(FANOUT_EXCHANGE_NAME, BuiltinExchangeType.FANOUT, Boolean.TRUE);
-		
-		String message = "product details";
-		channel.basicPublish(FANOUT_EXCHANGE_NAME, "", null, message.getBytes(StandardCharsets.UTF_8));
-		System.out.println(" [x] Sent '" + message + "'");
-
-		channel.close();
-		connection.close();
-	}
-	
-	public static void createExchangeAndBindingQueue() throws IOException, TimeoutException {
+	public static void createExchangeFanoutAndBindingQueue() throws IOException, TimeoutException {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost("localhost");
 		Connection connection = factory.newConnection();
@@ -96,6 +90,32 @@ public class RabbitMQ {
 		
 		String message = "product details";
 		channel.basicPublish(FANOUT_EXCHANGE_NAME, "", null, message.getBytes(StandardCharsets.UTF_8));
+		System.out.println(" [x] Sent '" + message + "'");
+
+		channel.close();
+		connection.close();
+	}
+	
+	public static void createExchangeDirectAndBindingQueue() throws IOException, TimeoutException {
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost("localhost");
+		Connection connection = factory.newConnection();
+		Channel channel = connection.createChannel();
+
+		// CRIA EXCHANTE
+		channel.exchangeDeclare(DIRECT_EXCHANGE_NAME, BuiltinExchangeType.DIRECT, Boolean.TRUE);
+		// CRIA QUEUE
+		channel.queueDeclare(DIRECT_QUEUE_NAME_1, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
+		channel.queueDeclare(DIRECT_QUEUE_NAME_2, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
+		// BIND QUEUE
+		channel.queueBind(DIRECT_QUEUE_NAME_1, DIRECT_EXCHANGE_NAME, ROUTING_KEY_1);
+		channel.queueBind(DIRECT_QUEUE_NAME_2, DIRECT_EXCHANGE_NAME, ROUTING_KEY_2);
+		
+		String message = "product details";
+		channel.basicPublish(DIRECT_EXCHANGE_NAME, ROUTING_KEY_1, null, message.getBytes(StandardCharsets.UTF_8));
+		channel.basicPublish(DIRECT_EXCHANGE_NAME, ROUTING_KEY_1, null, message.getBytes(StandardCharsets.UTF_8));
+		channel.basicPublish(DIRECT_EXCHANGE_NAME, ROUTING_KEY_1, null, message.getBytes(StandardCharsets.UTF_8));
+		channel.basicPublish(DIRECT_EXCHANGE_NAME, ROUTING_KEY_2, null, message.getBytes(StandardCharsets.UTF_8));
 		System.out.println(" [x] Sent '" + message + "'");
 
 		channel.close();

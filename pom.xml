@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 
@@ -13,6 +13,9 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<aws.sdk.sqs>1.11.415</aws.sdk.sqs>
+		<amqp-client>5.8.0</amqp-client>
+		<lombok>1.18.12</lombok>
+		<spring-boot-starter>2.2.5.RELEASE</spring-boot-starter>
 	</properties>
 
 	<dependencies>
@@ -20,7 +23,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			<version>2.2.5.RELEASE</version>
+			<version>${spring-boot-starter}</version>
 		</dependency>
 		
 		<dependency>
@@ -32,13 +35,13 @@
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>3.6.6</version>
+            <version>${amqp-client}</version>
         </dependency>
 		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.12</version>
+			<version>${lombok}</version>
     		<scope>provided</scope>
 		</dependency>
 

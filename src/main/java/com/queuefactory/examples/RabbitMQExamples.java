@@ -17,19 +17,22 @@ public class RabbitMQExamples {
 	
 	private static final String HOST = "localhost";
 	private static final String QUEUE_NAME = "queue-test";
+	private static final String QUEUE_NAME_OBJECT = "queue-test-object";
+	
 	private static final String FANOUT_QUEUE_NAME_1 = "fanout-queue-1";
 	
 	private static final String DIRECT_EXCHANGE_NAME = "direct-exchange-test";
 	private static final String FANOUT_EXCHANGE_NAME = "fanout-exchange-test";
 	
 	public static void main(String[] args) {
-//		exampleSendMessageQueue();
-//		exampleSendMessageQueueObject();
-//		exampleSendMessageDirectExchange();
-//		exampleSendMessageFanoutExchangeObject();
-//		exampleReadMessageQueue();
-//		exampleReadMessageQueue1();
-//		exampleReadMessageQueueObject();
+		exampleSendMessageQueue();
+		exampleReadMessageQueue();
+		
+		exampleSendMessageQueueObject();
+		exampleReadMessageQueueObject();
+		
+		exampleSendMessageDirectExchange();
+		exampleSendMessageFanoutExchange();
 	}
 	
 	public static void exampleSendMessageQueue() {
@@ -37,11 +40,45 @@ public class RabbitMQExamples {
 		RabbitMQProvider.connect(HOST).sendMessageQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, message);
 	}
 	
+	public static void exampleReadMessageQueue() {
+		try {
+			Channel channel = RabbitMQProvider.connect(HOST).listeningQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
+			channel.basicConsume(QUEUE_NAME, Boolean.TRUE, "consumer-tag-1", new DefaultConsumer(channel) {
+			    @Override
+			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+			    	String message = new String(body, "UTF-8");
+			    	log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", QUEUE_NAME, message);
+			    }
+			 });
+		} catch (IOException e) {
+			log.error("RabbitMQ ERROR read message Queue: {}", QUEUE_NAME);
+		} 
+	}
+	
 	public static void exampleSendMessageQueueObject() {
 		User user = new User();
 		user.setName("Maria");
 		user.setAge(31);
-		RabbitMQProvider.connect(HOST).sendMessageQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, user);
+		RabbitMQProvider.connect(HOST).sendMessageQueue(QUEUE_NAME_OBJECT, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null, user);
+	}
+	
+	public static void exampleReadMessageQueueObject() {
+		try {
+			Channel channel = RabbitMQProvider.connect(HOST).listeningQueue(QUEUE_NAME_OBJECT, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
+			channel.basicConsume(QUEUE_NAME_OBJECT, Boolean.TRUE, "consumer-tag-2", new DefaultConsumer(channel) {
+			    @Override
+			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+					try {
+						User message = (User) RabbitMQUtil.deserialize(body);
+						log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", QUEUE_NAME_OBJECT, message);
+					} catch (ClassNotFoundException | IOException e) {
+						log.error("RabbitMQ ERROR read message Queue: {}", QUEUE_NAME_OBJECT, e);
+					}
+			    }
+			 });
+		} catch (IOException e) {
+			log.error("RabbitMQ ERROR read message Queue: {}", FANOUT_QUEUE_NAME_1, e);
+		} 
 	}
 	
 	public static void exampleSendMessageDirectExchange() {
@@ -55,62 +92,6 @@ public class RabbitMQExamples {
 	public static void exampleSendMessageFanoutExchange() {
 		byte[] message = "message test".getBytes();
 		RabbitMQProvider.connect(HOST).sendMessageExchange(FANOUT_EXCHANGE_NAME, BuiltinExchangeType.FANOUT, Boolean.TRUE, null, message);
-	}
-	
-	public static void exampleSendMessageFanoutExchangeObject() {
-		User user = new User();
-		user.setName("Maria");
-		user.setAge(31);
-		RabbitMQProvider.connect(HOST).sendMessageExchange(FANOUT_EXCHANGE_NAME, BuiltinExchangeType.FANOUT, Boolean.TRUE, null, user);
-	}
-	
-	public static void exampleReadMessageQueue() {
-		try {
-			Channel channel = RabbitMQProvider.connect(HOST).listeningQueue(QUEUE_NAME, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
-			channel.basicConsume(QUEUE_NAME, Boolean.TRUE, "ConsumerTag", new DefaultConsumer(channel) {
-			    @Override
-			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-			    	String message = new String(body, "UTF-8");
-			    	log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", QUEUE_NAME, message);
-			    }
-			 });
-		} catch (IOException e) {
-			log.error("RabbitMQ ERROR read message Queue: {}", QUEUE_NAME);
-		} 
-	}
-	
-	public static void exampleReadMessageQueue1() {
-		try {
-			Channel channel = RabbitMQProvider.connect(HOST).listeningQueue(FANOUT_QUEUE_NAME_1, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
-			channel.basicConsume(FANOUT_QUEUE_NAME_1, Boolean.TRUE, "ConsumerTagFanout", new DefaultConsumer(channel) {
-			    @Override
-			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-			    	String message = new String(body, "UTF-8");
-			    	log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", FANOUT_QUEUE_NAME_1, message);
-			    }
-			 });
-		} catch (IOException e) {
-			log.error("RabbitMQ ERROR read message Queue: {}", FANOUT_QUEUE_NAME_1);
-		} 
-	}
-	
-	public static void exampleReadMessageQueueObject() {
-		try {
-			Channel channel = RabbitMQProvider.connect(HOST).listeningQueue(FANOUT_QUEUE_NAME_1, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE, null);
-			channel.basicConsume(FANOUT_QUEUE_NAME_1, Boolean.TRUE, "ConsumerTagFanout", new DefaultConsumer(channel) {
-			    @Override
-			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-					try {
-						User message = (User) RabbitMQUtil.deserialize(body);
-						log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", FANOUT_QUEUE_NAME_1, message);
-					} catch (ClassNotFoundException | IOException e) {
-						log.error("RabbitMQ ERROR read message Queue: {}", FANOUT_QUEUE_NAME_1, e);
-					}
-			    }
-			 });
-		} catch (IOException e) {
-			log.error("RabbitMQ ERROR read message Queue: {}", FANOUT_QUEUE_NAME_1, e);
-		} 
 	}
 	
 }

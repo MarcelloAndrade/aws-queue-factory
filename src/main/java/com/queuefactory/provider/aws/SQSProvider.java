@@ -42,13 +42,13 @@ public class SQSProvider {
 			CreateQueueResult queueResult = null;
 			
 			if(type.equals(SQSTypeQueue.AWS_SQS_STANDARD)) {
-				queueResult = createStandardQueue(type, queueName);
+				queueResult = createStandardQueue(queueName);
 				
 			} else if(type.equals(SQSTypeQueue.AWS_SQS_FIFO)) {
-				queueResult = createFifoQueue(type, queueName);
+				queueResult = createFifoQueue(queueName);
 				
 			} else if(type.equals(SQSTypeQueue.AWS_SQS_DEAD_LETTER)) {
-				queueResult = createDeadLetterQueue(type, queueName);
+				queueResult = createDeadLetterQueue(queueName);
 			}
 			
 			if(queueResult.getSdkHttpMetadata().getHttpStatusCode() == 200) {
@@ -62,18 +62,18 @@ public class SQSProvider {
 		}
 	}
 	
-	private CreateQueueResult createStandardQueue(SQSTypeQueue type, String queueName) {
+	private CreateQueueResult createStandardQueue(String queueName) {
 		return sqsClient.createQueue(new CreateQueueRequest(queueName));
 	}
 	
-	private CreateQueueResult createFifoQueue(SQSTypeQueue type, String queueName) {
+	private CreateQueueResult createFifoQueue(String queueName) {
 		Map<String, String> queueAttributes = new HashMap<String, String>();
         queueAttributes.put("FifoQueue", "true");
         queueAttributes.put("ContentBasedDeduplication", "true");
         return sqsClient.createQueue(new CreateQueueRequest(queueName +".fifo").withAttributes(queueAttributes));
 	}
 	
-	private CreateQueueResult createDeadLetterQueue(SQSTypeQueue type, String queueName) {
+	private CreateQueueResult createDeadLetterQueue(String queueName) {
 		CreateQueueResult queueResult = sqsClient.createQueue(queueName);
 		
 		String queueUrlDeadLetter = sqsClient.createQueue(queueName+ "-dead-letter").getQueueUrl();

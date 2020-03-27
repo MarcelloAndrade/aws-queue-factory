@@ -37,13 +37,13 @@ public class RabbitMQProvider {
 	}
 
 	/**
-	 * Envio de menssagem diretamente para uma Queue
+	 * Envio de mensagem diretamente para uma Queue
 	 * @param queueName - nome da fila
 	 * @param durable - true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
 	 * @param exclusive -  true se estamos declarando uma fila exclusiva (restrita a esta conexão)
 	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
 	 * @param arguments - outras propriedades (argumentos de construção) para a fila
-	 * @param message - menssagem a ser enviada
+	 * @param message - mensagem a ser enviada
 	 */
 	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, byte[] message) {
 		try {
@@ -58,13 +58,13 @@ public class RabbitMQProvider {
 	}
 	
 	/**
-	 * Envio de menssagem diretamente para uma Queue
+	 * Envio de mensagem diretamente para uma Queue
 	 * @param queueName - nome da fila
 	 * @param durable - true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
 	 * @param exclusive -  true se estamos declarando uma fila exclusiva (restrita a esta conexão)
 	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
 	 * @param arguments - outras propriedades (argumentos de construção) para a fila
-	 * @param message - menssagem a ser enviada
+	 * @param message - mensagem a ser enviada
 	 */
 	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, Object message) {
 		try {
@@ -79,12 +79,12 @@ public class RabbitMQProvider {
 	}
 	
 	/**
-	 * Envio de menssagem para exchange
+	 * Envio de mensagem para exchange
 	 * @param exchangeName - nome da exchange
 	 * @param exchangeType - type exchange
 	 * @param exchangeDurable - true se estamos declarando uma exchange durável (a exchange sobreviverá à reinicialização do servidor)
 	 * @param routingKey - routing key
-	 * @param message - menssagem a ser enviada
+	 * @param message - mensagem a ser enviada
 	 */
 	public void sendMessageExchange(String exchangeName, BuiltinExchangeType exchangeType, Boolean exchangeDurable, String routingKey, byte[] message) {
 		try {
@@ -100,12 +100,12 @@ public class RabbitMQProvider {
 	}
 	
 	/**
-	 * Envio de menssagem para exchange
+	 * Envio de mensagem para exchange
 	 * @param exchangeName - nome da exchange
 	 * @param exchangeType - type exchange
 	 * @param exchangeDurable - true se estamos declarando uma exchange durável (a exchange sobreviverá à reinicialização do servidor)
 	 * @param routingKey - routing key
-	 * @param message - object menssagem a ser enviada
+	 * @param message - object mensagem a ser enviada
 	 */
 	public void sendMessageExchange(String exchangeName, BuiltinExchangeType exchangeType, Boolean exchangeDurable, String routingKey, Object message) {
 		try {

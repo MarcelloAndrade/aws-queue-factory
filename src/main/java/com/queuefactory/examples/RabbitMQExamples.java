@@ -69,7 +69,7 @@ class RabbitMQExamples {
 			    @Override
 			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 					try {
-						User message = (User) Util.deserialize(body); 
+						User message = (User) Util.deserializeFromByteArray(body); 
 						log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", QUEUE_NAME_OBJECT, message);
 					} catch (ClassNotFoundException | IOException e) {
 						log.error("RabbitMQ ERROR read message Queue: {}", QUEUE_NAME_OBJECT, e);

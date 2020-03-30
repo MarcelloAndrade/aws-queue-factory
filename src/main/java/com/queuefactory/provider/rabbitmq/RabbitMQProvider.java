@@ -65,7 +65,7 @@ public class RabbitMQProvider {
 	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, Object message) {
 		try {
 			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
-			channel.basicPublish("", queueName, null, Util.getByteArray(message));
+			channel.basicPublish("", queueName, null, Util.serializeToByteArray(message));
 			log.info("RabbitMQ SUCESS send message to Queue: {}", queueName);
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR send message to Queue: {}", queueName , e);
@@ -107,7 +107,7 @@ public class RabbitMQProvider {
 		try {
 			routingKey = routingKey == null ? "" : routingKey;
 			channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
-			channel.basicPublish(exchangeName, routingKey, null, Util.getByteArray(message));
+			channel.basicPublish(exchangeName, routingKey, null, Util.serializeToByteArray(message));
 			log.info("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey);
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);

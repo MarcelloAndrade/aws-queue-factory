@@ -117,13 +117,13 @@ public class RabbitMQProvider {
 	}
 
 	/**
-	 * Abre um canal para ouvir novas menssagens que chegam na fila
+	 * Abre um canal para ouvir novas mensagens que chegam na fila
 	 * @param queueName - queue name
 	 * @param durable -  true se estivermos declarando uma fila durável (a fila sobreviverá à reinicialização do servidor)
 	 * @param exclusive - true se estamos declarando uma fila exclusiva (restrita a esta conexão)
 	 * @param autoDelete - true se estivermos declarando uma fila de autodetecção (o servidor a excluirá quando não estiver mais em uso)
 	 * @param arguments -  outras propriedades (argumentos de construção) para a fila
-	 * @return canal para ouvir novas menssagens
+	 * @return canal para ouvir novas mensagens
 	 */
 	public Channel listeningQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments) {
 		try {

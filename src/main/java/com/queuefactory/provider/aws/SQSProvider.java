@@ -1,5 +1,7 @@
 package com.queuefactory.provider.aws;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,10 +14,14 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
+import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
+import com.queuefactory.util.Util;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -92,29 +98,72 @@ public class SQSProvider {
 		return queueResult;
 	}
 
-	public void sendMessage(SQSTypeQueue type, String queueName, Map<String, String> message) {
-		// TODO Auto-generated method stub
-		log.info("Sucess send message queue name: {} ", queueName);
+	public void sendMessage(String queueName, String message) {
+        sqsClient.sendMessage(new SendMessageRequest(queueName, message));
+		log.info("SQS Sucess send message queue name: {} ", queueName);
+	}
+	
+	public void sendMessageObject(String queueName, Object message) {
+        try {
+			sqsClient.sendMessage(new SendMessageRequest(queueName, Util.serializeToBase64(message)));
+			log.info("SQS Sucess send message queue name: {} ", queueName);
+		} catch (IOException e) {
+			log.error("SQS ERROR send message queue name: {} ", queueName, e);
+		}
 	}
 
-	public void sendMessages(SQSTypeQueue type, String queueName, List<Map<String, String>> messages) {
-		// TODO Auto-generated method stub
+	/**
+	 * Leitura de mensagem
+	 * @param queueName - nome da fila
+	 * @param waitTimeSeconds - duração (em segundos) pela qual a chamada aguarda a chegada de uma mensagem na fila antes de retornar. 
+	 * Se uma mensagem estiver disponível, a chamada retornará mais cedo que WaitTimeSeconds. 
+	 * Se nenhuma mensagem estiver disponível e o tempo de espera expirar, a chamada retornará com sucesso com uma lista vazia de mensagens.
+	 * @return List<Message> list de mensagens
+	 */
+	public List<Message> readMessages(String queueName, Integer waitTimeSeconds) {
+		String queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl();
+		ReceiveMessageRequest request = new ReceiveMessageRequest(queueUrl)
+				.withWaitTimeSeconds(waitTimeSeconds) 
+				.withMaxNumberOfMessages(10);
+		return sqsClient.receiveMessage(request).getMessages();
+	}
+	
+	/**
+	 * Leitura de mensagem
+	 * @param <T> - Object a ser deserializado
+	 * @param queueName - nome da fila
+	 * @param waitTimeSeconds - duração (em segundos) pela qual a chamada aguarda a chegada de uma mensagem na fila antes de retornar. 
+	 * Se uma mensagem estiver disponível, a chamada retornará mais cedo que WaitTimeSeconds. 
+	 * Se nenhuma mensagem estiver disponível e o tempo de espera expirar, a chamada retornará com sucesso com uma lista vazia de mensagens.
+	 * @return mensagem deserializada
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> readMessagesObject(String queueName, Integer waitTimeSeconds) {
+		String queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl();
+		ReceiveMessageRequest request = new ReceiveMessageRequest(queueUrl)
+				.withWaitTimeSeconds(waitTimeSeconds) 
+				.withMaxNumberOfMessages(10);
 		
-	}
-
-	public List<Message> readMessagesQueue(SQSTypeQueue type, String queueName) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void deleteMessageQueue(SQSTypeQueue type, String queueName, String messageID) {
-		// TODO Auto-generated method stub
+		List<Message> sqsMessages = sqsClient.receiveMessage(request).getMessages();
 		
+		List<T> list = new ArrayList<T>();
+		sqsMessages.forEach(m -> {
+			try {
+				list.add((T) Util.deserializeFromBase64(m.getBody()));
+				deleteMessageQueue(queueName, m.getReceiptHandle());
+				log.info("SQS Sucess read message queue name: {}, msg: {} ", queueName, m.getMessageId());
+			} catch (Exception e) {
+				log.error("SQS ERROR read message queue name: {}, msg: {} ", queueName, m.getMessageId(), e);
+			}
+		});
+		return list;
 	}
 
-	public void monitoring(SQSTypeQueue type, String queueName) {
-		// TODO Auto-generated method stub
-		
+	private void deleteMessageQueue(String queueName, String messageID) {
+		String queueUrl = sqsClient.getQueueUrl(queueName).getQueueUrl();
+		sqsClient.deleteMessage(new DeleteMessageRequest()
+				.withQueueUrl(queueUrl)
+				.withReceiptHandle(messageID));
 	}
 
 	public List<String> listQueues() {

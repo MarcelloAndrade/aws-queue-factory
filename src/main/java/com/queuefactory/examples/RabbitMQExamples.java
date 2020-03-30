@@ -3,6 +3,7 @@ package com.queuefactory.examples;
 import java.io.IOException;
 
 import com.queuefactory.provider.rabbitmq.RabbitMQProvider;
+import com.queuefactory.util.Util;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -68,7 +69,7 @@ class RabbitMQExamples {
 			    @Override
 			    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
 					try {
-						User message = (User) RabbitMQProvider.deserialize(body); 
+						User message = (User) Util.deserialize(body); 
 						log.info("RabbitMQ SUCESS read message Queue: {}, Message: {} ", QUEUE_NAME_OBJECT, message);
 					} catch (ClassNotFoundException | IOException e) {
 						log.error("RabbitMQ ERROR read message Queue: {}", QUEUE_NAME_OBJECT, e);

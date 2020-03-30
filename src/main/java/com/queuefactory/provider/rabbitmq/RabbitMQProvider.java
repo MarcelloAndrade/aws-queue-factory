@@ -1,12 +1,8 @@
 package com.queuefactory.provider.rabbitmq;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Map;
 
+import com.queuefactory.util.Util;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -69,7 +65,7 @@ public class RabbitMQProvider {
 	public void sendMessageQueue(String queueName, Boolean durable, Boolean exclusive, Boolean autoDelete, Map<String, Object> arguments, Object message) {
 		try {
 			channel.queueDeclare(queueName, durable, exclusive, autoDelete, arguments);
-			channel.basicPublish("", queueName, null, getByteArray(message));
+			channel.basicPublish("", queueName, null, Util.getByteArray(message));
 			log.info("RabbitMQ SUCESS send message to Queue: {}", queueName);
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR send message to Queue: {}", queueName , e);
@@ -93,7 +89,7 @@ public class RabbitMQProvider {
 			channel.basicPublish(exchangeName, routingKey, null, message);
 			log.info("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey);
 		} catch (Exception e) {
-			log.error("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);
+			log.error("RabbitMQ ERROR send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);
 		} finally {
 			close();
 		}
@@ -111,7 +107,7 @@ public class RabbitMQProvider {
 		try {
 			routingKey = routingKey == null ? "" : routingKey;
 			channel.exchangeDeclare(exchangeName, exchangeType, exchangeDurable);
-			channel.basicPublish(exchangeName, routingKey, null, getByteArray(message));
+			channel.basicPublish(exchangeName, routingKey, null, Util.getByteArray(message));
 			log.info("RabbitMQ SUCESS send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey);
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR send message to Exchange: {}, Type: {}, Routing Key: {} ", exchangeName, exchangeType.name(), routingKey, e);
@@ -140,13 +136,6 @@ public class RabbitMQProvider {
 		} 
     }
 	
-	private byte[] getByteArray(Object obj) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ObjectOutputStream os = new ObjectOutputStream(out);
-		os.writeObject(obj);
-		return out.toByteArray();
-	}
-	
 	void close() {
 		try {
 			channel.close();
@@ -154,11 +143,5 @@ public class RabbitMQProvider {
 		} catch (Exception e) {
 			log.error("RabbitMQ ERROR close connection", e);
 		}
-	}
-	
-	public static Object deserialize(byte[] message) throws IOException, ClassNotFoundException {
-		ByteArrayInputStream in = new ByteArrayInputStream(message);
-		ObjectInputStream is = new ObjectInputStream(in);
-		return is.readObject();
 	}
 }

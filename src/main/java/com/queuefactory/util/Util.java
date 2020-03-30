@@ -55,7 +55,8 @@ public class Util {
 			return objectStream.readObject();
 			
 		} finally {
-			objectStream.close();
+			if (objectStream != null)
+                objectStream.close();
 		}
 	}
 
